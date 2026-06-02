@@ -45,3 +45,6 @@ An intelligent email automation workflow built using n8n that monitors incoming 
 * Resume customization based on job description.
 * Automatic job application submission.
 * Dashboard for tracking opportunities.
+
+
+
