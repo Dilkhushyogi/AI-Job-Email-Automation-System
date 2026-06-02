@@ -1,0 +1,359 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 10,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        816,
+        384
+      ],
+      "id": "9acc7ba4-27e8-4d93-bb47-6ad1b8c1b894",
+      "name": "Get many messages",
+      "webhookId": "709b911d-833a-4bca-be1f-146b7c0b24a0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "s6shmvMSUuGgf9eI",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Your role is to determine if the feedback filled by the customer is \n   - Complaint\n   - Job Opening\n   - Security\n   - Other\nThe feedback is {{ $json.snippet }}\n\nYor responce should be only one from the below \n Complaint\n Job Opening\n Security\n Other",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1488,
+        384
+      ],
+      "id": "34203719-19a2-4361-9322-d71a2f9f3eed",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "allam-2-7b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        560
+      ],
+      "id": "f0cfb62f-604f-4246-8307-00f1a0740c96",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "2ujFFLcymNdAcPSo",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1248,
+        368
+      ],
+      "id": "8b1b77da-cef1-4a3b-b8f2-b3a5153a79b6",
+      "name": "Mark a message as read",
+      "webhookId": "31dee6f6-a9bb-4c0e-a957-a644f2f4e01e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "s6shmvMSUuGgf9eI",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b90aa2ce-f025-4f94-adc7-41c51742aacf",
+              "leftValue": "={{ $json.labels[0].id }}",
+              "rightValue": "INBOX",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "290df34f-9170-4af2-83e1-02e6606736ac",
+              "leftValue": "={{ $json.labels[2].id }}",
+              "rightValue": "UNREAD",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1040,
+        384
+      ],
+      "id": "e414c9ef-fc7a-4134-a902-91a13ee84d25",
+      "name": "If email unread",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        592,
+        368
+      ],
+      "id": "595cc45a-efc3-44f1-a88f-8f88e2188c0d",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "s6shmvMSUuGgf9eI",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "Job Opening ",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "1c1d0b91-e9dc-4f35-b030-f13fe40ecc05"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "45a224ab-896b-47e9-82d5-32ccbbbc9ae0",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "Complaint ",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "9b7ff682-d0d9-43db-a567-c593333340aa",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "Security ",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8cbfc1c7-cece-4896-b0a4-04dd93f3b34d",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "Other  ",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        -16
+      ],
+      "id": "bc0aa239-8335-4dda-9080-c7303f3e00de",
+      "name": "Switch",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "chatId": "1031484381",
+        "text": "=Hy Dilkhush You Recive a job opening ",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1840,
+        384
+      ],
+      "id": "80dab67b-28d5-438e-af51-2dd7c21f9c70",
+      "name": "Job Opening",
+      "webhookId": "f858b15e-0158-4bf8-ac35-ec71e194b6e8",
+      "credentials": {
+        "telegramApi": {
+          "id": "McGcBDuaXPtQjN2V",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Get many messages": {
+      "main": [
+        [
+          {
+            "node": "If email unread",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Job Opening",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark a message as read": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If email unread": {
+      "main": [
+        [
+          {
+            "node": "Mark a message as read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": null
+}
